@@ -1,6 +1,6 @@
 export class CreatorCode {
     private _code: string;
-    
+
     constructor(code: string) {
         this._code = code;
     }

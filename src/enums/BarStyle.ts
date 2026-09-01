@@ -1,4 +1,4 @@
 export enum BarStyle {
-	Normal = 'normal',
-	Striped = 'striped',
+    Normal = "normal",
+    Striped = "striped",
 }

@@ -1,3 +1,3 @@
 export interface HeadlessOptions {
-	token: string;
+    token: string;
 }

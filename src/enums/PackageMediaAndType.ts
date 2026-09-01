@@ -1,9 +1,9 @@
 export enum PackageType {
-	Single = 'single',
-	Subscription = 'subscription',
+    Single = "single",
+    Subscription = "subscription",
 }
 
 export enum PackageMediaType {
-	Image = 'image',
-	Video = 'video',
+    Image = "image",
+    Video = "video",
 }

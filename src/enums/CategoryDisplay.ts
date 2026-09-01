@@ -1,4 +1,4 @@
 export enum CategoryDisplay {
-	List = 'list',
-	Grid = 'grid',
+    List = "list",
+    Grid = "grid",
 }
