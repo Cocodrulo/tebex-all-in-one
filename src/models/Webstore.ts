@@ -2,7 +2,7 @@ import type { CurrencyCode } from "@/enums/Currencies";
 import type { GamePlatform, GamePlatformLabel } from "@/enums/GamePlatforms";
 import type { Language } from "@/enums/Languages";
 import { ensureDate } from "@/lib/EnsureDate";
-import { executeApi } from "@/lib/executeApi";
+import { executeApi } from "@/lib/ExecuteApi";
 
 export interface WebstoreProps {
     id: number;
