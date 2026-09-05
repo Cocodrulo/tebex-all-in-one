@@ -5,9 +5,9 @@ export type Immutable<T> = {
 export function deepFreeze<T extends object>(obj: T): Immutable<T> {
     const propNames = Object.getOwnPropertyNames(obj);
     for (const name of propNames) {
-        const value = obj[name];
+        const value = (obj as Record<string, unknown>)[name];
         if (value && typeof value === "object") {
-            deepFreeze(value);
+            deepFreeze(value as object);
         }
     }
     return Object.freeze(obj);

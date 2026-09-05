@@ -11,3 +11,10 @@ export class InvalidWebstoreOrBasketId extends Error {
         this.name = "InvalidWebstoreOrBasketId";
     }
 }
+
+export class InvalidRequest extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = "InvalidRequest";
+    }
+}

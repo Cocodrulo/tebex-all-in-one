@@ -1,6 +1,6 @@
 export interface TierStatus {
     id: number;
-    ident: string;
+    description: string;
 }
 
 export interface PendingDowngradePackageData {

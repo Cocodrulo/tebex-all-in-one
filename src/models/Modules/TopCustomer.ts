@@ -31,7 +31,7 @@ export class TopCustomerData {
     }
 }
 
-export class TopCustomerModule extends BasicModule {
+export class TopCustomer extends BasicModule {
     private _data: TopCustomerData;
 
     constructor(data: {

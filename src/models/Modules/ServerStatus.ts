@@ -24,20 +24,24 @@ export class ServerStatusData {
     private _hostname: string;
     private _port: number;
     private _online: boolean;
-    private _players: Players;
+    private _players: Players | null;
 
     constructor(data: {
         header: string;
         hostname: string;
         port: number;
         online: boolean;
-        players: Players;
+        players?: Players | { online: number; max: number } | null;
     }) {
         this._header = data.header;
         this._hostname = data.hostname;
         this._port = data.port;
         this._online = data.online;
-        this._players = data.players;
+        this._players = data.players
+            ? data.players instanceof Players
+                ? data.players
+                : new Players(data.players)
+            : null;
     }
 
     get header(): string {
@@ -56,7 +60,7 @@ export class ServerStatusData {
         return this._online;
     }
 
-    get players(): Players {
+    get players(): Players | null {
         return this._players;
     }
 }

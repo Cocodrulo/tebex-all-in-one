@@ -87,11 +87,10 @@ export class Page {
     }
 
     static async fetch(token: string): Promise<Page[]> {
-        if (!token) {
+        if (!token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
-        }
 
         const API = `/accounts/${encodeURIComponent(token)}/pages`;
         const result = await executeApi<PageProps[]>(API);

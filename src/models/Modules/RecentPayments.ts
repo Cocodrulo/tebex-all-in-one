@@ -85,6 +85,14 @@ export class RecentPayments extends BasicModule {
             endTime: data.endTime,
             type: ModuleTypes.RecentPayments,
         });
+
+        this._data = new RecentPaymentsData({
+            header: data.data.header,
+            payments:
+                (data.data.payments as any[])?.map((payment) =>
+                    payment instanceof RecentPayment ? payment : new RecentPayment(payment),
+                ) || [],
+        });
     }
 
     get data(): RecentPaymentsData {

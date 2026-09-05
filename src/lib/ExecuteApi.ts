@@ -13,6 +13,22 @@ export async function executeApi<T>(
     },
 ): Promise<UnitResponse<T | string>> {
     try {
+        if (!options.method) options.method = "GET";
+
+        const headers: Record<string, string> = {
+            Accept: "application/json",
+            ...(options.headers as Record<string, string>),
+        };
+
+        if (
+            options.body &&
+            (options.method === "POST" || options.method === "PUT" || options.method === "PATCH")
+        ) {
+            headers["Content-Type"] = "application/json";
+        }
+
+        options.headers = headers;
+
         const result = await fetch(`${TEBEX_API}${path}`, options);
         if (!result.ok) return new UnitResponse<string>(await result.text(), result.status);
         const json = await result.json();
@@ -20,6 +36,9 @@ export async function executeApi<T>(
         return new UnitResponse<T>(parseResult(json), result.status, true);
     } catch (error: unknown) {
         console.error(error);
-        return new UnitResponse<null>(null, 500);
+        return new UnitResponse<string>(
+            error instanceof Error ? error.message : "Internal Server Error",
+            500,
+        );
     }
 }

@@ -1,13 +1,14 @@
 import type { Country } from "@/enums/CountryCodes";
 import type { CurrencyCode } from "@/enums/Currencies";
-import { InvalidWebstoreId, InvalidWebstoreOrBasketId } from "@/errors/InvalidIds";
+import { InvalidRequest, InvalidWebstoreId, InvalidWebstoreOrBasketId } from "@/errors/InvalidData";
+import type { DynamicPackageInput } from "@/interfaces/DynamicPackage";
 import { executeApi } from "@/lib/ExecuteApi";
 import { deepFreeze, type Immutable } from "@/lib/Immutable";
-import type { BasketLinks } from "@/models/Basket/BasketLinks";
+import { BasketLinks } from "@/models/Basket/BasketLinks";
 import { Coupon } from "@/models/Codes/Coupon";
 import { CreatorCode } from "@/models/Codes/CreatorCode";
 import { Giftcard } from "@/models/Codes/Giftcard";
-import { BasketPackage } from "@/models/Package";
+import { BasketPackage, Package } from "@/models/Package";
 import { BasketAuth } from "./Basket/BasketAuth";
 
 export interface BasketProps {
@@ -18,19 +19,19 @@ export interface BasketProps {
     username?: string;
     coupons?: (Coupon | object)[];
     giftcards?: (Giftcard | object)[];
-    creatorCode?: CreatorCode | object;
+    creatorCode?: CreatorCode | string | object;
     cancelUrl?: string;
     completeUrl?: string;
-    completeAutoRedirecTo?: boolean;
+    completeAutoRedirect?: boolean;
     country: Country;
     ip: string;
-    usernameId: string;
-    basePrice: string;
-    salesTax: string;
-    totalPrice: string;
+    usernameId: number;
+    basePrice: number;
+    salesTax: number;
+    totalPrice: number;
     packages: (BasketPackage | object)[] | [];
     custom?: object;
-    links: BasketLinks;
+    links: BasketLinks | { payment: string; checkout: string };
     currency: CurrencyCode;
 }
 
@@ -46,13 +47,13 @@ export class Basket {
     private _creatorCode?: CreatorCode;
     private _cancelUrl?: string;
     private _completeUrl?: string;
-    private _completeAutoRedirecTo?: boolean;
+    private _completeAutoRedirect?: boolean;
     private _country: Country;
     private _ip: string;
-    private _usernameId: string;
-    private _basePrice: string;
-    private _salesTax: string;
-    private _totalPrice: string;
+    private _usernameId: number;
+    private _basePrice: number;
+    private _salesTax: number;
+    private _totalPrice: number;
     private _currency: CurrencyCode;
     private _packages: BasketPackage[] | [];
     private _custom?: object;
@@ -73,11 +74,13 @@ export class Basket {
         this._creatorCode = props.creatorCode
             ? props.creatorCode instanceof CreatorCode
                 ? props.creatorCode
-                : new CreatorCode((props.creatorCode as any).code)
+                : typeof props.creatorCode === "string"
+                  ? new CreatorCode(props.creatorCode)
+                  : new CreatorCode((props.creatorCode as any).code)
             : undefined;
         this._cancelUrl = props.cancelUrl;
         this._completeUrl = props.completeUrl;
-        this._completeAutoRedirecTo = Boolean(props.completeAutoRedirecTo);
+        this._completeAutoRedirect = Boolean(props.completeAutoRedirect);
         this._country = props.country;
         this._ip = props.ip;
         this._usernameId = props.usernameId;
@@ -90,7 +93,12 @@ export class Basket {
                 pkg instanceof BasketPackage ? pkg : new BasketPackage(pkg),
             ) || [];
         this._custom = props.custom;
-        this._links = props.links;
+        this._links =
+            props.links instanceof BasketLinks
+                ? props.links
+                : props.links
+                  ? new BasketLinks(props.links.payment, props.links.checkout)
+                  : new BasketLinks("", "");
 
         this._token = token;
     }
@@ -135,8 +143,8 @@ export class Basket {
         return this._completeUrl;
     }
 
-    get completeAutoRedirecTo(): boolean | undefined {
-        return this._completeAutoRedirecTo;
+    get completeAutoRedirect(): boolean | undefined {
+        return this._completeAutoRedirect;
     }
 
     get country(): Country {
@@ -147,19 +155,19 @@ export class Basket {
         return this._ip;
     }
 
-    get usernameId(): string {
+    get usernameId(): number {
         return this._usernameId;
     }
 
-    get basePrice(): string {
+    get basePrice(): number {
         return this._basePrice;
     }
 
-    get salesTax(): string {
+    get salesTax(): number {
         return this._salesTax;
     }
 
-    get totalPrice(): string {
+    get totalPrice(): number {
         return this._totalPrice;
     }
 
@@ -179,21 +187,244 @@ export class Basket {
         return this._links;
     }
 
-    async getAuthLinks(returnUrl: string) {
-        if (!this._token) {
+    async getAuthLinks(returnUrl: string): Promise<BasketAuth[]> {
+        if (!this._token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
-        }
 
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/auth?returnUrl=${encodeURIComponent(returnUrl)}`;
 
-        const result = await executeApi<BasketAuth>(API);
+        const result = await executeApi<{ name: string; url: string }[]>(API);
 
         if (result.statusCode == 422) throw new InvalidWebstoreOrBasketId();
+        if (!result.ok || !Array.isArray(result.data)) throw new Error(result.data as string);
+
+        return (result.data as { name: string; url: string }[]).map(
+            (auth) => new BasketAuth(auth.name, auth.url),
+        );
+    }
+
+    async addPackage(pkg: Package, quantity: number, isDynamic?: boolean): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/baskets/${encodeURIComponent(this._ident)}/packages`;
+        const result = await executeApi<BasketProps>(API, {
+            method: "POST",
+            body: JSON.stringify({
+                package_id: pkg.id,
+                quantity: quantity,
+                dynamic: isDynamic,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+
+        return new Basket(result.data as BasketProps, this._token);
+    }
+
+    async removePackage(pkg: BasketPackage): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/baskets/${encodeURIComponent(this._ident)}/packages/remove`;
+        const result = await executeApi<BasketProps>(API, {
+            method: "POST",
+            body: JSON.stringify({
+                package_id: pkg.id,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+
+        return new Basket(result.data as BasketProps, this._token);
+    }
+
+    async updatePackageQuantity(pkg: BasketPackage, quantity: number): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/baskets/${encodeURIComponent(this._ident)}/packages/${encodeURIComponent(pkg.id)}`;
+        const result = await executeApi<BasketProps>(API, {
+            method: "PUT",
+            body: JSON.stringify({
+                quantity: quantity,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+
+        return new Basket(result.data as BasketProps, this._token);
+    }
+
+    async createDynamicPackages(
+        username: string,
+        categoryId: number,
+        packages: DynamicPackageInput[],
+    ): Promise<{ message: string }> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/dynamic-packages`;
+        const result = await executeApi<{ message: string }>(API, {
+            method: "PUT",
+            body: JSON.stringify({
+                username,
+                category_id: categoryId,
+                packages: packages.map((pkg) => ({
+                    name: pkg.name,
+                    price: pkg.price,
+                    slug: pkg.slug,
+                    description: pkg.description,
+                    image_url: pkg.imageUrl,
+                    custom: pkg.custom,
+                })),
+            }),
+        });
+
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok || typeof result.data !== "object") throw new Error(result.data as string);
 
-        return new BasketAuth(result.data.name, result.data.url);
+        return result.data as { message: string };
+    }
+
+    async applyCoupon(coupon: Coupon): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/coupons`;
+        const result = await executeApi<{ success: boolean; message: string }>(API, {
+            method: "POST",
+            body: JSON.stringify({
+                coupon_code: coupon.code,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+        if (typeof result.data !== "object") throw new Error(result.data as string);
+        if (!result.data.success) throw new Error(result.data.message);
+
+        return Basket.get(this._token, this._ident);
+    }
+
+    async removeCoupon(coupon: Coupon): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/coupons/remove`;
+        const result = await executeApi<{ success: boolean; message: string }>(API, {
+            method: "POST",
+            body: JSON.stringify({
+                coupon_code: coupon.code,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+        if (typeof result.data !== "object") throw new Error(result.data as string);
+        if (!result.data.success) throw new Error(result.data.message);
+
+        return Basket.get(this._token, this._ident);
+    }
+
+    async applyGiftcard(giftcard: Giftcard): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/giftcards`;
+        const result = await executeApi<{ success: boolean; message: string }>(API, {
+            method: "POST",
+            body: JSON.stringify({
+                card_number: giftcard.cardNumber,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+        if (typeof result.data !== "object") throw new Error(result.data as string);
+        if (!result.data.success) throw new Error(result.data.message);
+
+        return Basket.get(this._token, this._ident);
+    }
+
+    async removeGiftcard(giftcard: Giftcard): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/giftcards/remove`;
+        const result = await executeApi<{ success: boolean; message: string }>(API, {
+            method: "POST",
+            body: JSON.stringify({
+                card_number: giftcard.cardNumber,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+        if (typeof result.data !== "object") throw new Error(result.data as string);
+        if (!result.data.success) throw new Error(result.data.message);
+
+        return Basket.get(this._token, this._ident);
+    }
+
+    async applyCreatorCode(creatorCode: CreatorCode): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/creator-codes`;
+        const result = await executeApi<{ success: boolean; message: string }>(API, {
+            method: "POST",
+            body: JSON.stringify({
+                creator_code: creatorCode.code,
+            }),
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+        if (typeof result.data !== "object") throw new Error(result.data as string);
+        if (!result.data.success) throw new Error(result.data.message);
+
+        return Basket.get(this._token, this._ident);
+    }
+
+    async removeCreatorCode(): Promise<Basket> {
+        if (!this._token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/creator-codes/remove`;
+        const result = await executeApi<{ success: boolean; message: string }>(API, {
+            method: "POST",
+        });
+
+        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (!result.ok) throw new Error(result.data as string);
+
+        return Basket.get(this._token, this._ident);
     }
 
     static async create(
@@ -205,11 +436,10 @@ export class Basket {
             completeAutoRedirect?: boolean;
         },
     ) {
-        if (!token) {
+        if (!token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
-        }
 
         const API = `/accounts/${encodeURIComponent(token)}/baskets`;
         const result = await executeApi<BasketProps>(API, {
@@ -221,6 +451,21 @@ export class Basket {
                 complete_auto_redirect: options.completeAutoRedirect,
             }),
         });
+
+        if (result.statusCode == 422) throw new InvalidWebstoreId();
+        if (!result.ok) throw new Error(result.data as string);
+
+        return new Basket(result.data as BasketProps, token);
+    }
+
+    static async get(token: string, basketIdent: string) {
+        if (!token)
+            throw new Error(
+                "Required parameter token was null or undefined when calling this function",
+            );
+
+        const API = `/accounts/${encodeURIComponent(token)}/baskets/${encodeURIComponent(basketIdent)}`;
+        const result = await executeApi<BasketProps>(API);
 
         if (result.statusCode == 422) throw new InvalidWebstoreId();
         if (!result.ok) throw new Error(result.data as string);

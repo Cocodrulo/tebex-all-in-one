@@ -19,7 +19,7 @@ export class TextboxData {
     }
 }
 
-export class TextboxModule extends BasicModule {
+export class Textbox extends BasicModule {
     private _data: TextboxData;
 
     constructor(data: {
