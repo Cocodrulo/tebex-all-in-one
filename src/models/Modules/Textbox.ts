@@ -1,6 +1,9 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
 import { BasicModule } from "@/models/Modules/BasicModule";
 
+/**
+ * Represents the data of the Textbox module.
+ */
 export class TextboxData {
     private _header: string;
     private _text: string;
@@ -19,6 +22,11 @@ export class TextboxData {
     }
 }
 
+/**
+ * Represents the Textbox module.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/sidebar/get-sidebar-modules#textboxmodule
+ */
 export class Textbox extends BasicModule {
     private _data: TextboxData;
 

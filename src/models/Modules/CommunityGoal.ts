@@ -4,6 +4,11 @@ import type { Immutable } from "@/lib/Immutable";
 import { BasicModule } from "@/models/Modules/BasicModule";
 import type { IntRange } from "@/lib/IntRange";
 
+/**
+ * Represents the data of the Community Goal module.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/sidebar/get-sidebar-modules#communitygoalmodule
+ */
 export class CommunityGoalData {
     private _header: string;
     private _barStyle: BarStyle;
@@ -31,35 +36,61 @@ export class CommunityGoalData {
         this._timesAchieved = data.timesAchieved;
     }
 
+    /**
+     * The header of the module.
+     */
     get header(): string {
         return this._header;
     }
 
+    /**
+     * The bar style of the module.
+     */
     get barStyle(): BarStyle {
         return this._barStyle;
     }
 
+    /**
+     * Whether the bar is animated.
+     */
     get barAnimated(): boolean {
         return this._barAnimated;
     }
 
+    /**
+     * The percentage of the goal that has been reached.
+     */
     get percentage(): IntRange<0, 100> {
         return this._percentage;
     }
 
+    /**
+     * The total payments made towards the goal.
+     */
     get totalPayments(): number | undefined {
         return this._totalPayments;
     }
 
+    /**
+     * The target amount for the goal.
+     */
     get target(): number | undefined {
         return this._target;
     }
 
+    /**
+     * The number of times the goal has been achieved.
+     */
     get timesAchieved(): number | undefined {
         return this._timesAchieved;
     }
 }
 
+/**
+ * Represents the Community Goal module.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/sidebar/get-sidebar-modules#communitygoalmodule
+ */
 export class CommunityGoal extends BasicModule {
     private _data: CommunityGoalData;
 
@@ -78,6 +109,9 @@ export class CommunityGoal extends BasicModule {
         this._data = data.data;
     }
 
+    /**
+     * The data of the module.
+     */
     get data(): Immutable<CommunityGoalData> {
         return this._data;
     }
