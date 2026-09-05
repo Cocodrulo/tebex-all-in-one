@@ -15,6 +15,11 @@ export interface PageProps {
     content: string;
 }
 
+/**
+ * Represents a single page.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/pages/get-custom-pages
+ */
 export class Page {
     private _id: number;
     private _createdAt: Date;
@@ -42,50 +47,90 @@ export class Page {
         this._content = props.content;
     }
 
+    /**
+     * The identifier of the page.
+     */
     get id(): number {
         return this._id;
     }
 
+    /**
+     * The date on which the page was created.
+     */
     get createdAt(): Date {
         return this._createdAt;
     }
 
+    /**
+     * The date on which the page was last updated.
+     */
     get updatedAt(): Date {
         return this._updatedAt;
     }
 
+    /**
+     * The identifier of the account.
+     */
     get accountId(): number {
         return this._accountId;
     }
 
+    /**
+     * The title of the page.
+     */
     get title(): string {
         return this._title;
     }
 
+    /**
+     * The slug of the page.
+     */
     get slug(): string {
         return this._slug;
     }
 
+    /**
+     * Whether the page is private.
+     */
     get private(): boolean {
         return this._private;
     }
 
+    /**
+     * Whether the page is hidden.
+     */
     get hidden(): boolean {
         return this._hidden;
     }
 
+    /**
+     * Whether the page is disabled.
+     */
     get disabled(): boolean {
         return this._disabled;
     }
 
+    /**
+     * Whether the page is included in the sequence.
+     */
     get sequence(): boolean {
         return this._sequence;
     }
 
+    /**
+     * The content of the page.
+     */
     get content(): string {
         return this._content;
     }
 
+    /**
+     * Fetches all the pages.
+     *
+     * @see https://docs.tebex.io/developers/headless-api/guides/pages/get-custom-pages
+     * @param token The Tebex public token.
+     * @returns A promise that resolves to an array of pages.
+     */
     static async fetch(token: string): Promise<Page[]> {
         if (!token)
             throw new Error(

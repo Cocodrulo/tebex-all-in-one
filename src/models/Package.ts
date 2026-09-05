@@ -35,6 +35,9 @@ export interface PackageProps {
     updatedAt: string | number | Date;
 }
 
+/**
+ * Represents the media of a package.
+ */
 export class PackageMedia {
     private _type: PackageMediaType;
     private _name: string;
@@ -56,27 +59,45 @@ export class PackageMedia {
         this._primary = Boolean(props.primary);
     }
 
+    /**
+     * The type of the media.
+     */
     get type(): Immutable<PackageMediaType> {
         return this._type;
     }
 
+    /**
+     * The name of the media.
+     */
     get name(): string {
         return this._name;
     }
 
+    /**
+     * The URL of the media.
+     */
     get url(): string {
         return this._url;
     }
 
+    /**
+     * Whether the media is featured.
+     */
     get featured(): boolean {
         return this._featured;
     }
 
+    /**
+     * Whether the media is primary.
+     */
     get primary(): boolean {
         return this._primary;
     }
 }
 
+/**
+ * Represents the base class for a package.
+ */
 export class BasePackage {
     private _id: number;
     private _description: string;
@@ -101,31 +122,52 @@ export class BasePackage {
         this._type = props.type;
     }
 
+    /**
+     * The identifier of the package.
+     */
     get id(): number {
         return this._id;
     }
 
+    /**
+     * The description of the package.
+     */
     get description(): string {
         return this._description;
     }
 
+    /**
+     * The image of the package.
+     */
     get image(): string {
         return this._image;
     }
 
+    /**
+     * The name of the package.
+     */
     get name(): string {
         return this._name;
     }
 
+    /**
+     * The slug of the package.
+     */
     get slug(): string {
         return this._slug;
     }
 
+    /**
+     * The type of the package.
+     */
     get type(): Immutable<PackageType> {
         return this._type;
     }
 }
 
+/**
+ * Represents a package that is in the basket.
+ */
 export class BasketPackage extends BasePackage {
     private _inBasket: InBasketData;
     private _revenueShare: RevenueShare[];
@@ -156,15 +198,24 @@ export class BasketPackage extends BasePackage {
             ) || [];
     }
 
+    /**
+     * The basket data of the package.
+     */
     get inBasket(): Immutable<InBasketData> {
         return this._inBasket;
     }
 
+    /**
+     * The revenue share of the package.
+     */
     get revenueShare(): Immutable<RevenueShare[]> {
         return Object.freeze(this._revenueShare);
     }
 }
 
+/**
+ * Represents a full package.
+ */
 export class Package extends BasePackage {
     private _token: string;
     private _category: BaseCategory;
@@ -223,78 +274,139 @@ export class Package extends BasePackage {
         this._updatedAt = ensureDate(props.updatedAt)!;
     }
 
+    /**
+     * The category of the package.
+     */
     get category(): Immutable<BaseCategory> {
         return this._category;
     }
 
+    /**
+     * The base price of the package.
+     */
     get basePrice(): number {
         return this._basePrice;
     }
 
+    /**
+     * The sales tax of the package.
+     */
     get salesTax(): number {
         return this._salesTax;
     }
 
+    /**
+     * The total price of the package.
+     */
     get totalPrice(): number {
         return this._totalPrice;
     }
 
+    /**
+     * The currency of the package.
+     */
     get currency(): Immutable<CurrencyCode> {
         return this._currency;
     }
 
+    /**
+     * The prorate price of the package.
+     */
     get proratePrice(): number | undefined {
         return this._proratePrice;
     }
 
+    /**
+     * The discount of the package.
+     */
     get discount(): number | undefined {
         return this._discount;
     }
 
+    /**
+     * Whether the quantity of the package is disabled.
+     */
     get disableQuantity(): boolean {
         return this._disableQuantity;
     }
 
+    /**
+     * Whether the gifting of the package is disabled.
+     */
     get disableGifting(): boolean {
         return this._disableGifting;
     }
 
+    /**
+     * The expiration date of the package.
+     */
     get expirationDate(): Date | undefined {
         return this._expirationDate;
     }
 
+    /**
+     * The media of the package.
+     */
     get media(): Immutable<PackageMedia[]> {
         return Object.freeze(this._media);
     }
 
+    /**
+     * The order of the package.
+     */
     get order(): number {
         return this._order;
     }
 
+    /**
+     * The user limit of the package.
+     */
     get userLimit(): number | undefined {
         return this._userLimit;
     }
 
+    /**
+     * The creator meta data of the package.
+     */
     get creatorMetaData(): Immutable<object> | undefined {
         return this._creatorMetaData;
     }
 
+    /**
+     * The options of the package.
+     */
     get options(): Immutable<unknown[]> {
         return Object.freeze(this._options);
     }
 
+    /**
+     * The variables of the package.
+     */
     get variables(): Immutable<unknown[]> {
         return Object.freeze(this._variables);
     }
 
+    /**
+     * The date on which the package was created.
+     */
     get createdAt(): Date {
         return this._createdAt;
     }
 
+    /**
+     * The date on which the package was last updated.
+     */
     get updatedAt(): Date {
         return this._updatedAt;
     }
 
+    /**
+     * Updates the tier of the package.
+     *
+     * @see https://docs.tebex.io/developers/headless-api/guides/tiers/update-tier
+     * @param tierId The identifier of the tier.
+     * @returns A promise that resolves to the updated package.
+     */
     async updateTier(tierId: number) {
         if (!this._token)
             throw new Error(
@@ -317,6 +429,15 @@ export class Package extends BasePackage {
         return Package.get(this._token, this.id);
     }
 
+    /**
+     * Retrieves a list of packages.
+     *
+     * @see https://docs.tebex.io/developers/headless-api/guides/packages/get-packages
+     * @param token The Tebex public token.
+     * @param ip The IP address of the request.
+     * @param basketIdent The basket identifier.
+     * @returns A promise that resolves to an array of packages.
+     */
     static async fetch(
         token: string,
         { ip, basketIdent }: { ip?: string; basketIdent?: string } = {},
@@ -340,6 +461,14 @@ export class Package extends BasePackage {
         return (result.data as PackageProps[]).map((pkg) => new Package(token, pkg));
     }
 
+    /**
+     * Retrieves a specific package.
+     *
+     * @see https://docs.tebex.io/developers/headless-api/guides/packages/get-package
+     * @param token The Tebex public token.
+     * @param packageId The identifier of the package.
+     * @returns A promise that resolves to the package.
+     */
     static async get(token: string, packageId: number) {
         if (!token)
             throw new Error(

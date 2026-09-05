@@ -53,38 +53,65 @@ export class Tier {
         this._pendingDowngradePackage = pendingDowngradePackage;
     }
 
+    /**
+     * The identifier of the tier.
+     */
     get id(): number {
         return this._id;
     }
 
+    /**
+     * The date on which the tier was created.
+     */
     get createdAt(): Date {
         return this._createdAt;
     }
 
+    /**
+     * The identifier of the user.
+     */
     get usernameId(): string {
         return this._usernameId;
     }
 
+    /**
+     * The package of the tier.
+     */
     get package(): Package {
         return this._package;
     }
 
+    /**
+     * The status of the tier.
+     */
     get active(): boolean {
         return this._active;
     }
 
+    /**
+     * The recurring payment reference of the tier.
+     */
     get recurringPaymentReference(): string {
         return this._recurringPaymentReference;
     }
 
+    /**
+     * The date on which the next payment is due.
+     */
     get nextPaymentDate(): Date {
         return this._nextPaymentDate;
     }
 
+    /**
+     * The status of the tier.
+     */
     get status(): TierStatus {
         return this._status;
     }
 
+    /**
+     * The pending downgrade package of the tier.
+     */
     get pendingDowngradePackage(): PendingDowngradePackageData {
         return this._pendingDowngradePackage;
     }

@@ -1,6 +1,9 @@
 import type { Immutable } from "@/lib/Immutable";
 
-export class UnitResponse<T> {
+/**
+ * Represents an response.
+ */
+export class Response<T> {
     private _data: T;
     private _statusCode: number;
     private _ok: boolean;
@@ -15,17 +18,24 @@ export class UnitResponse<T> {
         this._ok = ok ?? false;
     }
 
+    /**
+     * The data from the response.
+     */
     get data(): Immutable<T> {
         return this._data;
     }
 
+    /**
+     * Whether the response was successful.
+     */
     get ok(): boolean {
         return this._ok;
     }
 
+    /**
+     * The status code of the response.
+     */
     get statusCode(): number {
         return this._statusCode;
     }
 }
-
-export class ArrayResponse<T> extends UnitResponse<T[]> {}

@@ -31,6 +31,12 @@ interface CategoryProps {
     tiered: boolean;
 }
 
+/**
+ * Represents a base category in the Tebex store.
+ * This class is used to represent a category without the full category data.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/categories
+ */
 export class BaseCategory {
     private _id: number;
     private _name: string;
@@ -40,15 +46,27 @@ export class BaseCategory {
         this._name = props.name;
     }
 
+    /**
+     * The identifier of the category.
+     */
     get id(): number {
         return this._id;
     }
 
+    /**
+     * The name of the category.
+     */
     get name(): string {
         return this._name;
     }
 }
 
+/**
+ * Represents a full category in the Tebex store.
+ * This class extends the BaseCategory class and adds more information about the category.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/categories
+ */
 export class Category extends BaseCategory {
     private _slug: string;
     private _parent?: BaseCategory;
@@ -96,46 +114,86 @@ export class Category extends BaseCategory {
         this._tiered = Boolean(props.tiered);
     }
 
+    /**
+     * The slug of the category.
+     */
     get slug(): string {
         return this._slug;
     }
 
+    /**
+     * The parent category of the category.
+     */
     get parent(): Immutable<BaseCategory | undefined> {
         return this._parent;
     }
 
+    /**
+     * The active tier of the category.
+     */
     get activeTier(): Immutable<Tier> | undefined {
         return this._activeTier;
     }
 
+    /**
+     * The description of the category.
+     */
     get description(): string {
         return this._description;
     }
 
+    /**
+     * The packages of the category.
+     */
     get packages(): Immutable<Package[]> {
         return Object.freeze(this._packages);
     }
 
+    /**
+     * The order of the category.
+     */
     get order(): Immutable<number> {
         return this._order;
     }
 
+    /**
+     * The display type of the category.
+     */
     get displayType(): Immutable<CategoryDisplay> {
         return this._displayType;
     }
 
+    /**
+     * The image URL of the category.
+     */
     get imageUrl(): Immutable<string | undefined> {
         return this._imageUrl;
     }
 
+    /**
+     * Whether the category is dynamic.
+     */
     get dynamic(): Immutable<boolean> {
         return this._dynamic;
     }
 
+    /**
+     * Whether the category is tiered.
+     */
     get tiered(): Immutable<boolean> {
         return this._tiered;
     }
 
+    /**
+     * Fetches all categories.
+     *
+     * @see https://docs.tebex.io/developers/headless-api/guides/categories/get-categories
+     * @see https://docs.tebex.io/developers/headless-api/guides/categories/get-categories-include-packages
+     *
+     * @param token The Tebex public token.
+     * @param options Options for fetching categories.
+     * @returns A promise that resolves to an array of categories.
+     */
     static async fetch(
         token: string,
         {
@@ -181,6 +239,17 @@ export class Category extends BaseCategory {
         return (result.data as CategoryProps[]).map((category) => new Category(token, category));
     }
 
+    /**
+     * Fetches a specific category.
+     *
+     * @see https://docs.tebex.io/developers/headless-api/guides/categories/get-category
+     * @see https://docs.tebex.io/developers/headless-api/guides/categories/get-category-include-packages
+     *
+     * @param token The Tebex public token.
+     * @param categoryId The identifier of the category.
+     * @param options Options for fetching the category.
+     * @returns A promise that resolves to the category.
+     */
     static async get(
         token: string,
         categoryId: string,
