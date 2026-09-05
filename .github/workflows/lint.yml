@@ -1,0 +1,36 @@
+name: Lint check
+
+on:
+    push:
+        branches: [main]
+    pull_request:
+        branches: [main]
+
+permissions: {}
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.run_id }}
+    cancel-in-progress: true
+
+jobs:
+    lint:
+        runs-on: ubuntu-24.04
+        steps:
+            - uses: actions/checkout@v6
+            - uses: ./.github/actions/setup-repo
+            - name: Lint
+              run: |
+                  echo "::group::Lint"
+                  pnpm lint:check
+                  echo "::endgroup::"
+
+    format:
+        runs-on: ubuntu-24.04
+        steps:
+            - uses: actions/checkout@v6
+            - uses: ./.github/actions/setup-repo
+            - name: Format
+              run: |
+                  echo "::group::Format"
+                  pnpm format:check
+                  echo "::endgroup::"
