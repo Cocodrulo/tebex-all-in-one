@@ -13,9 +13,10 @@ export default defineConfig({
     build: {
         lib: {
             entry: {
-                react: resolve(__dirname, "src/react/index.ts"),
-                angular: resolve(__dirname, "src/angular/index.ts"),
-                webComponents: resolve(__dirname, "src/web-components/index.ts"),
+                // react: resolve(import.meta.dirname, "src/react/index.ts"),
+                // angular: resolve(import.meta.dirname, "src/angular/index.ts"),
+                // webComponents: resolve(import.meta.dirname, "src/web-components/index.ts"),
+                headless: resolve(import.meta.dirname, "src/Headless.ts"),
             },
             formats: ["es", "cjs"],
             fileName: (format, entryName) =>
