@@ -196,7 +196,9 @@ export class BasketPackage extends BasePackage {
         this._inBasket = new InBasketData(props.inBasket as InBasketData);
         this._revenueShare =
             props.revenueShare?.map((share: RevenueShare | object) =>
-                share instanceof RevenueShare ? share : new RevenueShare(share as ConstructorParameters<typeof RevenueShare>[0]),
+                share instanceof RevenueShare
+                    ? share
+                    : new RevenueShare(share as ConstructorParameters<typeof RevenueShare>[0]),
             ) || [];
     }
 

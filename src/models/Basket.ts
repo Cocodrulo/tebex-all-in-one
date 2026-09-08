@@ -97,7 +97,9 @@ export class Basket {
         this._currency = props.currency;
         this._packages =
             props.packages?.map((pkg: BasketPackage | object) =>
-                pkg instanceof BasketPackage ? pkg : new BasketPackage(pkg as ConstructorParameters<typeof BasketPackage>[0]),
+                pkg instanceof BasketPackage
+                    ? pkg
+                    : new BasketPackage(pkg as ConstructorParameters<typeof BasketPackage>[0]),
             ) || [];
         this._custom = props.custom;
         this._links =
@@ -493,7 +495,8 @@ export class Basket {
                 "Required parameter token was null or undefined when calling this function",
             );
 
-        const cardNumber = typeof giftcardOrNumber === "string" ? giftcardOrNumber : giftcardOrNumber.cardNumber;
+        const cardNumber =
+            typeof giftcardOrNumber === "string" ? giftcardOrNumber : giftcardOrNumber.cardNumber;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/giftcards`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
@@ -523,7 +526,8 @@ export class Basket {
                 "Required parameter token was null or undefined when calling this function",
             );
 
-        const cardNumber = typeof giftcardOrNumber === "string" ? giftcardOrNumber : giftcardOrNumber.cardNumber;
+        const cardNumber =
+            typeof giftcardOrNumber === "string" ? giftcardOrNumber : giftcardOrNumber.cardNumber;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/giftcards/remove`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
@@ -553,7 +557,10 @@ export class Basket {
                 "Required parameter token was null or undefined when calling this function",
             );
 
-        const code = typeof creatorCodeOrString === "string" ? creatorCodeOrString : creatorCodeOrString.code;
+        const code =
+            typeof creatorCodeOrString === "string"
+                ? creatorCodeOrString
+                : creatorCodeOrString.code;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/creator-codes`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
