@@ -12,12 +12,7 @@ const TEBEX_API = "https://headless.tebex.io/api";
  */
 export async function executeApi<T>(
     path: string,
-    options: RequestInit = {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-        },
-    },
+    options: RequestInit = {},
 ): Promise<Response<T | string>> {
     try {
         if (!options.method) options.method = "GET";
@@ -40,7 +35,7 @@ export async function executeApi<T>(
         if (!result.ok) return new Response<string>(await result.text(), result.status);
         const json = await result.json();
 
-        return new Response<T>(parseResult(json), result.status, true);
+        return new Response<T>(parseResult(json), result.status);
     } catch (error: unknown) {
         console.error(error);
         return new Response<string>(

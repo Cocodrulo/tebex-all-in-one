@@ -4,7 +4,7 @@ import type { Immutable } from "@/lib/Immutable";
 import { Package, type PackageProps } from "@/models/Package";
 import type { PendingDowngradePackageData, TierStatus } from "@/interfaces/Tier";
 import { Tier } from "./Tier";
-import type { BasicAuth } from "@/interfaces/BasicAuth";
+import { bt64, type BasicAuth } from "@/lib/BasicAuth";
 
 interface CategoryProps {
     id: number;
@@ -104,7 +104,7 @@ export class Category extends BaseCategory {
             : undefined;
         this._description = props.description;
         this._packages =
-            props.packages?.map((pkg: any) =>
+            props.packages?.map((pkg: Package | PackageProps) =>
                 pkg instanceof Package ? pkg : new Package(token, pkg),
             ) || [];
         this._order = props.order;
@@ -199,12 +199,12 @@ export class Category extends BaseCategory {
         {
             includePackages = false,
             dynamicBasketIdent,
-            tieredInfoUsername,
+            tieredInfoUsernameId,
             basicAuth,
         }: {
             includePackages?: boolean;
             dynamicBasketIdent?: string;
-            tieredInfoUsername?: number;
+            tieredInfoUsernameId?: number;
             basicAuth?: BasicAuth;
         } = {},
     ) {
@@ -213,12 +213,12 @@ export class Category extends BaseCategory {
                 "Required parameter token was null or undefined when calling this function",
             );
 
-        const shouldIncludePackages = includePackages || tieredInfoUsername || dynamicBasketIdent;
+        const shouldIncludePackages = includePackages || tieredInfoUsernameId || dynamicBasketIdent;
 
         const searchParams = new URLSearchParams();
         if (shouldIncludePackages) searchParams.append("includePackages", "true");
-        if (tieredInfoUsername && basicAuth)
-            searchParams.append("usernameId", String(tieredInfoUsername));
+        if (tieredInfoUsernameId && basicAuth)
+            searchParams.append("usernameId", String(tieredInfoUsernameId));
         if (dynamicBasketIdent) searchParams.append("basketIdent", dynamicBasketIdent);
 
         const API = `/accounts/${encodeURIComponent(token)}/categories?${searchParams.toString()}`;
@@ -228,7 +228,7 @@ export class Category extends BaseCategory {
             basicAuth
                 ? {
                       headers: {
-                          Authorization: `Basic ${btoa(basicAuth)}`,
+                          Authorization: `Basic ${bt64(basicAuth)}`,
                       },
                   }
                 : undefined,
@@ -265,7 +265,12 @@ export class Category extends BaseCategory {
 
         const shouldIncludePackages = includePackages || dynamicBasketIdent;
 
-        const API = `/accounts/${encodeURIComponent(token)}/categories/${encodeURIComponent(categoryId)}${shouldIncludePackages ? "?includePackages=true" : ""}${dynamicBasketIdent ? `&basketIdent=${dynamicBasketIdent}` : ""}`;
+        const searchParams = new URLSearchParams();
+        if (shouldIncludePackages) searchParams.append("includePackages", "true");
+        if (dynamicBasketIdent) searchParams.append("basketIdent", dynamicBasketIdent);
+
+        const query = searchParams.toString();
+        const API = `/accounts/${encodeURIComponent(token)}/categories/${encodeURIComponent(categoryId)}${query ? `?${query}` : ""}`;
 
         const result = await executeApi<CategoryProps>(API);
 

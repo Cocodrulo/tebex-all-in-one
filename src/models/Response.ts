@@ -8,14 +8,12 @@ export class Response<T> {
     private _statusCode: number;
     private _ok: boolean;
 
-    constructor(data: T, statusCode: number, ok?: boolean) {
-        if (data && typeof data === "object" && "data" in data) {
+    constructor(data: T, statusCode: number) {
+        this._ok = statusCode >= 200 && statusCode < 300;
+        if (this._ok && data && typeof data === "object" && "data" in data)
             data = (data as Record<string, unknown>).data as T;
-        }
-
         this._data = data;
         this._statusCode = statusCode;
-        this._ok = ok ?? false;
     }
 
     /**

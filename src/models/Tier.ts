@@ -1,5 +1,5 @@
 import { InvalidRequest } from "@/errors/InvalidData";
-import type { BasicAuth } from "@/interfaces/BasicAuth";
+import { bt64, type BasicAuth } from "@/lib/BasicAuth";
 import type { PendingDowngradePackageData, TierStatus } from "@/interfaces/Tier";
 import { ensureDate } from "@/lib/EnsureDate";
 import { executeApi } from "@/lib/ExecuteApi";
@@ -126,7 +126,7 @@ export class Tier {
      * @returns A promise that resolves to the updated tier.
      */
     static async updateTier(tierId: string, auth: BasicAuth, packageId?: number): Promise<boolean> {
-        if (!auth || !auth.match(/\w+:\w+/))
+        if (!auth || !/^[\w-]+:[\w-]+$/.test(auth))
             throw new InvalidRequest(
                 "Invalid authentication for the webstore. Composed by publicToken:privateKey",
             );
@@ -139,7 +139,7 @@ export class Tier {
             }),
             method: "PATCH",
             headers: {
-                Authorization: `Basic ${btoa(auth)}`,
+                Authorization: `Basic ${bt64(auth)}`,
             },
         });
 

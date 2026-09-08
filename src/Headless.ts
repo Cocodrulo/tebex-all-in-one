@@ -1,4 +1,4 @@
-import type { BasicAuth } from "./interfaces/BasicAuth";
+import { createBasicAuth } from "./lib/BasicAuth";
 import type { HeadlessOptions } from "./interfaces/HeadlessOptions";
 import { Basket } from "./models/Basket";
 import { Category } from "./models/Category";
@@ -9,7 +9,12 @@ import { Tier } from "./models/Tier";
 import { Webstore } from "./models/Webstore";
 
 /**
- * Represents the Headless tebex API
+ * Represents the Headless tebex API.
+ *
+ * @warning This class uses a static singleton pattern that is **NOT safe for SSR/multi-tenant** environments.
+ * In server-side rendering or multi-tenant setups, the singleton is shared across all requests,
+ * which can cause data leakage between users/sessions. For those scenarios, instantiate directly
+ * or use a per-request context.
  *
  * @see https://docs.tebex.io/developers/headless-api/
  */
@@ -21,17 +26,32 @@ export class Headless {
     private constructor(options: HeadlessOptions) {
         this._token = options.token;
         this._privateKey = options.privateKey ?? null;
+
+        if (this._privateKey && typeof window !== "undefined") {
+            console.warn(
+                "[tebex-all-in-one] WARNING: A privateKey was provided in a browser environment. " +
+                    "The privateKey will be exposed in the client bundle. " +
+                    "Operations requiring privateKey (e.g. tiers) should only be executed from a server environment (Node.js, edge functions, etc.).",
+            );
+        }
     }
 
     /**
      * Initializes the Headless class with the given options.
      *
      * @param options The options for the Headless class. Private key is only needed for managing tiers.
-     * @returns A promise that resolves to a new instance of the Headless class.
+     * @returns The initialized Headless class.
      */
-    static async init(options: HeadlessOptions): Promise<Headless> {
+    static init(options: HeadlessOptions): Headless {
         Headless._headless = new Headless(options);
         return Headless._headless;
+    }
+
+    /**
+     * Destroys the current instance of the Headless class.
+     */
+    static destroy(): void {
+        Headless._headless = null;
     }
 
     /**
@@ -41,7 +61,7 @@ export class Headless {
      * @throws Error if the Headless class is not initialized.
      */
     static get headless(): Headless {
-        if (Headless._headless == null)
+        if (Headless._headless === null)
             throw new Error(
                 "Headless is not initialized. Please call Headless.init(options) first.",
             );
@@ -104,7 +124,7 @@ export class Headless {
      */
     async categories(options?: {
         includePackages?: boolean;
-        tieredInfoUsername?: number;
+        tieredInfoUsernameId?: number;
         dynamicBasketIdent?: string;
     }): Promise<Category[]> {
         return await Category.fetch(this._token, options);
@@ -169,9 +189,10 @@ export class Headless {
      * @returns A promise that resolves to whether the tier was updated.
      */
     async updateTier(tierId: string, packageId?: number): Promise<boolean> {
+        if (!this._privateKey) throw new Error("Private key is required for updating tiers.");
         return await Tier.updateTier(
             tierId,
-            `${this._token}:${this._privateKey}` as BasicAuth,
+            createBasicAuth(this._token, this._privateKey),
             packageId,
         );
     }

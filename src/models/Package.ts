@@ -167,6 +167,8 @@ export class BasePackage {
 
 /**
  * Represents a package that is in the basket.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/baskets
  */
 export class BasketPackage extends BasePackage {
     private _inBasket: InBasketData;
@@ -193,8 +195,8 @@ export class BasketPackage extends BasePackage {
 
         this._inBasket = new InBasketData(props.inBasket as InBasketData);
         this._revenueShare =
-            props.revenueShare?.map((share: any) =>
-                share instanceof RevenueShare ? share : new RevenueShare(share),
+            props.revenueShare?.map((share: RevenueShare | object) =>
+                share instanceof RevenueShare ? share : new RevenueShare(share as ConstructorParameters<typeof RevenueShare>[0]),
             ) || [];
     }
 
@@ -215,6 +217,8 @@ export class BasketPackage extends BasePackage {
 
 /**
  * Represents a full package.
+ *
+ * @see https://docs.tebex.io/developers/headless-api/guides/packages
  */
 export class Package extends BasePackage {
     private _token: string;
@@ -263,8 +267,9 @@ export class Package extends BasePackage {
         this._disableGifting = Boolean(props.disableGifting);
         this._expirationDate = ensureDate(props.expirationDate);
         this._media =
-            props.media?.map((m: any) => (m instanceof PackageMedia ? m : new PackageMedia(m))) ||
-            [];
+            props.media?.map((m: PackageMedia | ConstructorParameters<typeof PackageMedia>[0]) =>
+                m instanceof PackageMedia ? m : new PackageMedia(m),
+            ) || [];
         this._order = props.order;
         this._userLimit = props.userLimit;
         this._creatorMetaData = props.creatorMetaData;
@@ -455,7 +460,7 @@ export class Package extends BasePackage {
 
         const result = await executeApi<PackageProps[]>(API);
 
-        if (!result.ok || result.statusCode == 422 || typeof result.data !== "object")
+        if (!result.ok || result.statusCode === 422 || typeof result.data !== "object")
             throw new InvalidRequest(result.data as string);
 
         return (result.data as PackageProps[]).map((pkg) => new Package(token, pkg));

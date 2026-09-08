@@ -70,18 +70,20 @@ export class Basket {
         this._complete = Boolean(props.complete);
         this._email = props.email;
         this._username = props.username;
-        this._coupons = props.coupons?.map((coupon: any) =>
-            coupon instanceof Coupon ? coupon : new Coupon(coupon.code),
+        this._coupons = props.coupons?.map((coupon: Coupon | object) =>
+            coupon instanceof Coupon ? coupon : new Coupon((coupon as { code: string }).code),
         );
-        this._giftcards = props.giftcards?.map((giftcard: any) =>
-            giftcard instanceof Giftcard ? giftcard : new Giftcard(giftcard.cardNumber),
+        this._giftcards = props.giftcards?.map((giftcard: Giftcard | object) =>
+            giftcard instanceof Giftcard
+                ? giftcard
+                : new Giftcard((giftcard as { cardNumber: string }).cardNumber),
         );
         this._creatorCode = props.creatorCode
             ? props.creatorCode instanceof CreatorCode
                 ? props.creatorCode
                 : typeof props.creatorCode === "string"
                   ? new CreatorCode(props.creatorCode)
-                  : new CreatorCode((props.creatorCode as any).code)
+                  : new CreatorCode((props.creatorCode as { code: string }).code)
             : undefined;
         this._cancelUrl = props.cancelUrl;
         this._completeUrl = props.completeUrl;
@@ -94,8 +96,8 @@ export class Basket {
         this._totalPrice = props.totalPrice;
         this._currency = props.currency;
         this._packages =
-            props.packages?.map((pkg: any) =>
-                pkg instanceof BasketPackage ? pkg : new BasketPackage(pkg),
+            props.packages?.map((pkg: BasketPackage | object) =>
+                pkg instanceof BasketPackage ? pkg : new BasketPackage(pkg as ConstructorParameters<typeof BasketPackage>[0]),
             ) || [];
         this._custom = props.custom;
         this._links =
@@ -272,7 +274,7 @@ export class Basket {
 
         const result = await executeApi<{ name: string; url: string }[]>(API);
 
-        if (result.statusCode == 422) throw new InvalidWebstoreOrBasketId();
+        if (result.statusCode === 422) throw new InvalidWebstoreOrBasketId();
         if (!result.ok || !Array.isArray(result.data)) throw new Error(result.data as string);
 
         return (result.data as { name: string; url: string }[]).map(
@@ -284,17 +286,17 @@ export class Basket {
      * Adds a package to the basket.
      *
      * @see https://docs.tebex.io/developers/headless-api/guides/baskets/add-package-to-basket
-     * @param pkg The package to add.
+     * @param pkgOrId The package instance or package ID to add.
      * @param quantity The quantity of the package to add.
      * @param data Optional data to send with the request.
      * @returns A promise that resolves to the updated basket.
      */
     async addPackage(
-        pkg: Package,
+        pkgOrId: Package | number,
         quantity: number,
         data?: {
             variableData?: Record<string, string | boolean | number>;
-            custom?: Record<string, any>;
+            custom?: Record<string, unknown>;
             isDynamic?: boolean;
         },
     ): Promise<Basket> {
@@ -304,10 +306,11 @@ export class Basket {
             );
 
         const API = `/baskets/${encodeURIComponent(this._ident)}/packages`;
+        const packageId = typeof pkgOrId === "number" ? pkgOrId : pkgOrId.id;
         const result = await executeApi<BasketProps>(API, {
             method: "POST",
             body: JSON.stringify({
-                package_id: pkg.id,
+                package_id: packageId,
                 quantity: quantity,
                 dynamic: data?.isDynamic,
                 variable_data: data?.variableData,
@@ -315,7 +318,7 @@ export class Basket {
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
 
         return new Basket(result.data as BasketProps, this._token);
@@ -342,7 +345,7 @@ export class Basket {
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
 
         return new Basket(result.data as BasketProps, this._token);
@@ -370,7 +373,7 @@ export class Basket {
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
 
         return new Basket(result.data as BasketProps, this._token);
@@ -421,24 +424,25 @@ export class Basket {
      * Applies a coupon to the basket.
      *
      * @see https://docs.tebex.io/developers/headless-api/guides/coupons/apply-coupon
-     * @param coupon The coupon to apply.
+     * @param couponOrCode The coupon instance or coupon code string to apply.
      * @returns A promise that resolves to the updated basket.
      */
-    async applyCoupon(coupon: Coupon): Promise<Basket> {
+    async applyCoupon(couponOrCode: Coupon | string): Promise<Basket> {
         if (!this._token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
 
+        const couponCode = typeof couponOrCode === "string" ? couponOrCode : couponOrCode.code;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/coupons`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
             body: JSON.stringify({
-                coupon_code: coupon.code,
+                coupon_code: couponCode,
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
         if (typeof result.data !== "object") throw new Error(result.data as string);
         if (!result.data.success) throw new Error(result.data.message);
@@ -450,24 +454,25 @@ export class Basket {
      * Removes a coupon from the basket.
      *
      * @see https://docs.tebex.io/developers/headless-api/guides/coupons/remove-coupon
-     * @param coupon The coupon to remove.
+     * @param couponOrCode The coupon instance or coupon code string to remove.
      * @returns A promise that resolves to the updated basket.
      */
-    async removeCoupon(coupon: Coupon): Promise<Basket> {
+    async removeCoupon(couponOrCode: Coupon | string): Promise<Basket> {
         if (!this._token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
 
+        const couponCode = typeof couponOrCode === "string" ? couponOrCode : couponOrCode.code;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/coupons/remove`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
             body: JSON.stringify({
-                coupon_code: coupon.code,
+                coupon_code: couponCode,
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
         if (typeof result.data !== "object") throw new Error(result.data as string);
         if (!result.data.success) throw new Error(result.data.message);
@@ -479,24 +484,25 @@ export class Basket {
      * Applies a giftcard to the basket.
      *
      * @see https://docs.tebex.io/developers/headless-api/guides/gift-cards/apply-gift-card
-     * @param giftcard The giftcard to apply.
+     * @param giftcardOrNumber The giftcard instance or card number string to apply.
      * @returns A promise that resolves to the updated basket.
      */
-    async applyGiftcard(giftcard: Giftcard): Promise<Basket> {
+    async applyGiftcard(giftcardOrNumber: Giftcard | string): Promise<Basket> {
         if (!this._token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
 
+        const cardNumber = typeof giftcardOrNumber === "string" ? giftcardOrNumber : giftcardOrNumber.cardNumber;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/giftcards`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
             body: JSON.stringify({
-                card_number: giftcard.cardNumber,
+                card_number: cardNumber,
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
         if (typeof result.data !== "object") throw new Error(result.data as string);
         if (!result.data.success) throw new Error(result.data.message);
@@ -508,24 +514,25 @@ export class Basket {
      * Removes a giftcard from the basket.
      *
      * @see https://docs.tebex.io/developers/headless-api/guides/gift-cards/remove-gift-card
-     * @param giftcard The giftcard to remove.
+     * @param giftcardOrNumber The giftcard instance or card number string to remove.
      * @returns A promise that resolves to the updated basket.
      */
-    async removeGiftcard(giftcard: Giftcard): Promise<Basket> {
+    async removeGiftcard(giftcardOrNumber: Giftcard | string): Promise<Basket> {
         if (!this._token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
 
+        const cardNumber = typeof giftcardOrNumber === "string" ? giftcardOrNumber : giftcardOrNumber.cardNumber;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/giftcards/remove`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
             body: JSON.stringify({
-                card_number: giftcard.cardNumber,
+                card_number: cardNumber,
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
         if (typeof result.data !== "object") throw new Error(result.data as string);
         if (!result.data.success) throw new Error(result.data.message);
@@ -537,24 +544,25 @@ export class Basket {
      * Applies a creator code to the basket.
      *
      * @see https://docs.tebex.io/developers/headless-api/guides/creator-codes/apply-creator-code
-     * @param creatorCode The creator code to apply.
+     * @param creatorCodeOrString The creator code instance or code string to apply.
      * @returns A promise that resolves to the updated basket.
      */
-    async applyCreatorCode(creatorCode: CreatorCode): Promise<Basket> {
+    async applyCreatorCode(creatorCodeOrString: CreatorCode | string): Promise<Basket> {
         if (!this._token)
             throw new Error(
                 "Required parameter token was null or undefined when calling this function",
             );
 
+        const code = typeof creatorCodeOrString === "string" ? creatorCodeOrString : creatorCodeOrString.code;
         const API = `/accounts/${encodeURIComponent(this._token)}/baskets/${encodeURIComponent(this._ident)}/creator-codes`;
         const result = await executeApi<{ success: boolean; message: string }>(API, {
             method: "POST",
             body: JSON.stringify({
-                creator_code: creatorCode.code,
+                creator_code: code,
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
         if (typeof result.data !== "object") throw new Error(result.data as string);
         if (!result.data.success) throw new Error(result.data.message);
@@ -579,7 +587,7 @@ export class Basket {
             method: "POST",
         });
 
-        if (result.statusCode == 422) throw new InvalidRequest(result.data as string);
+        if (result.statusCode === 422) throw new InvalidRequest(result.data as string);
         if (!result.ok) throw new Error(result.data as string);
 
         return Basket.get(this._token, this._ident);
@@ -618,7 +626,7 @@ export class Basket {
             }),
         });
 
-        if (result.statusCode == 422) throw new InvalidWebstoreId();
+        if (result.statusCode === 422) throw new InvalidWebstoreId();
         if (!result.ok) throw new Error(result.data as string);
 
         return new Basket(result.data as BasketProps, token);
@@ -641,7 +649,7 @@ export class Basket {
         const API = `/accounts/${encodeURIComponent(token)}/baskets/${encodeURIComponent(basketIdent)}`;
         const result = await executeApi<BasketProps>(API);
 
-        if (result.statusCode == 422) throw new InvalidWebstoreId();
+        if (result.statusCode === 422) throw new InvalidWebstoreId();
         if (!result.ok) throw new Error(result.data as string);
 
         return new Basket(result.data as BasketProps, token);

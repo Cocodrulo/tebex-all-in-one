@@ -10,7 +10,7 @@ export class TopCustomerData {
     private _usernameId: string;
     private _total?: number;
 
-    constructor(data: TopCustomerData) {
+    constructor(data: { header: string; username: string; usernameId: string; total?: number }) {
         this._header = data.header;
         this._username = data.username;
         this._usernameId = data.usernameId;
