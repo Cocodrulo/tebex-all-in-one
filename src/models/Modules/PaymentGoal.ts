@@ -2,7 +2,8 @@ import type { BarStyle } from "@/enums/BarStyle";
 import { ModuleTypes } from "@/enums/ModuleTypes";
 import type { Immutable } from "@/lib/Immutable";
 import type { IntRange } from "@/lib/IntRange";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
+import { PaymentGoalDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents the data of the Payment Goal module.
@@ -25,6 +26,7 @@ export class PaymentGoalData {
         total?: number;
         target?: number;
     }) {
+        PaymentGoalDataSchema.parse(data);
         this._header = data.header;
         this._percentage = data.percentage;
         this._barStyle = data.barStyle;

@@ -3,6 +3,7 @@ import type { GamePlatform, GamePlatformLabel } from "@/enums/GamePlatforms";
 import type { Language } from "@/enums/Languages";
 import { ensureDate } from "@/lib/EnsureDate";
 import { executeApi } from "@/lib/ExecuteApi";
+import { WebstoreSchema } from "@/schemas/Webstore.schema";
 
 export interface WebstoreProps {
     id: number;
@@ -37,6 +38,7 @@ export class Webstore {
     private _createdAt: Date;
 
     private constructor(props: WebstoreProps) {
+        WebstoreSchema.parse(props);
         this._id = props.id;
         this._description = props.description;
         this._name = props.name;

@@ -4,6 +4,7 @@ import type { PendingDowngradePackageData, TierStatus } from "@/interfaces/Tier"
 import { ensureDate } from "@/lib/EnsureDate";
 import { executeApi } from "@/lib/ExecuteApi";
 import type { Package } from "@/models/Package";
+import { TierSchema } from "@/schemas/Tier.schema";
 
 /**
  * Represents a tier.
@@ -42,6 +43,17 @@ export class Tier {
         status: TierStatus;
         pendingDowngradePackage: PendingDowngradePackageData;
     }) {
+        TierSchema.parse({
+            id,
+            createdAt,
+            usernameId,
+            package: pkg,
+            active,
+            recurringPaymentReference,
+            nextPaymentDate,
+            status,
+            pendingDowngradePackage,
+        });
         this._id = id;
         this._createdAt = ensureDate(createdAt);
         this._usernameId = usernameId;

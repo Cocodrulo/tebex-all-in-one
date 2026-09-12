@@ -1,8 +1,9 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
 import type { BarStyle } from "@/enums/BarStyle";
 import type { Immutable } from "@/lib/Immutable";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
 import type { IntRange } from "@/lib/IntRange";
+import { CommunityGoalDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents the data of the Community Goal module.
@@ -27,6 +28,7 @@ export class CommunityGoalData {
         target?: number;
         timesAchieved?: number;
     }) {
+        CommunityGoalDataSchema.parse(data);
         this._header = data.header;
         this._barStyle = data.barStyle;
         this._barAnimated = data.barAnimated;

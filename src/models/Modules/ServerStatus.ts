@@ -1,5 +1,6 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
+import { PlayersSchema, ServerStatusDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents the players data object in the ServerStatus module.
@@ -9,6 +10,7 @@ export class Players {
     private _max: number;
 
     constructor(data: { online: number; max: number }) {
+        PlayersSchema.parse(data);
         this._online = data.online;
         this._max = data.max;
     }
@@ -45,6 +47,7 @@ export class ServerStatusData {
         online: boolean;
         players?: Players | { online: number; max: number } | null;
     }) {
+        ServerStatusDataSchema.parse(data);
         this._header = data.header;
         this._hostname = data.hostname;
         this._port = data.port;

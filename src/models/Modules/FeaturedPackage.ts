@@ -1,7 +1,8 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
 import type { Immutable } from "@/lib/Immutable";
 import type { Package } from "@/models/Package";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
+import { FeaturedPackageDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents the data of the Featured Package module.
@@ -13,6 +14,7 @@ export class FeaturedPackageData {
     private _package: Package;
 
     constructor(data: { header: string; package: Package }) {
+        FeaturedPackageDataSchema.parse(data);
         this._header = data.header;
         this._package = data.package;
     }

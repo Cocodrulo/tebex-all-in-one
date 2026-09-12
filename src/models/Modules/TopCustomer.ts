@@ -1,5 +1,6 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
+import { TopCustomerDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents the data of the Top Customer module.
@@ -11,6 +12,7 @@ export class TopCustomerData {
     private _total?: number;
 
     constructor(data: { header: string; username: string; usernameId: string; total?: number }) {
+        TopCustomerDataSchema.parse(data);
         this._header = data.header;
         this._username = data.username;
         this._usernameId = data.usernameId;

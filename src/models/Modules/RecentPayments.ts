@@ -1,7 +1,8 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
 import { ensureDate } from "@/lib/EnsureDate";
 import type { Immutable } from "@/lib/Immutable";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
+import { RecentPaymentSchema, RecentPaymentsDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents a recent payment.
@@ -26,6 +27,7 @@ export class RecentPayment {
         price?: number;
         currency?: string;
     }) {
+        RecentPaymentSchema.parse(data);
         this._username = data.username;
         this._usernameId = data.usernameId;
         this._package = data.package;
@@ -87,6 +89,7 @@ export class RecentPaymentsData {
     private _payments: RecentPayment[];
 
     constructor(data: { header: string; payments: RecentPayment[] }) {
+        RecentPaymentsDataSchema.parse(data);
         this._header = data.header;
         this._payments = data.payments;
     }

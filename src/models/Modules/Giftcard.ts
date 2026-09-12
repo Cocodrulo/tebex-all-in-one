@@ -1,6 +1,7 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
 import type { Immutable } from "@/lib/Immutable";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
+import { GiftcardBalanceDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents the data of the Giftcard Balance module.
@@ -11,6 +12,7 @@ export class GiftcardBalanceData {
     private _header: string;
 
     constructor(data: { header: string }) {
+        GiftcardBalanceDataSchema.parse(data);
         this._header = data.header;
     }
 

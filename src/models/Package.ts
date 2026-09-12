@@ -7,6 +7,8 @@ import type { Immutable } from "@/lib/Immutable";
 import { InBasketData } from "@/models/Basket/InBasketData";
 import { RevenueShare } from "@/models/Basket/RevenueShare";
 import { BaseCategory } from "@/models/Category";
+import { PackageMediaSchema, PackageSchema } from "@/schemas/Package.schema";
+import { BasketPackageSchema } from "@/schemas/Basket.schema";
 
 export interface PackageProps {
     id: number;
@@ -52,6 +54,7 @@ export class PackageMedia {
         featured: boolean;
         primary: boolean;
     }) {
+        PackageMediaSchema.parse(props);
         this._type = props.type;
         this._name = props.name;
         this._url = props.url;
@@ -184,6 +187,7 @@ export class BasketPackage extends BasePackage {
         inBasket: object;
         revenueShare: object[];
     }) {
+        BasketPackageSchema.parse(props);
         super({
             id: props.id,
             description: props.description,
@@ -244,6 +248,7 @@ export class Package extends BasePackage {
     private _updatedAt: Date;
 
     constructor(token: string, props: PackageProps) {
+        PackageSchema.parse(props);
         super({
             id: props.id,
             description: props.description,

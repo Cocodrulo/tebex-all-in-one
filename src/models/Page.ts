@@ -1,5 +1,6 @@
 import { ensureDate } from "@/lib/EnsureDate";
 import { executeApi } from "@/lib/ExecuteApi";
+import { PageSchema } from "@/schemas/Page.schema";
 
 export interface PageProps {
     id: number;
@@ -34,6 +35,7 @@ export class Page {
     private _content: string;
 
     private constructor(props: PageProps) {
+        PageSchema.parse(props);
         this._id = props.id;
         this._createdAt = ensureDate(props.createdAt);
         this._updatedAt = ensureDate(props.updatedAt);

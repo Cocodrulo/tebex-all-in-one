@@ -9,6 +9,7 @@ import { Coupon } from "@/models/Codes/Coupon";
 import { CreatorCode } from "@/models/Codes/CreatorCode";
 import { Giftcard } from "@/models/Codes/Giftcard";
 import { BasketPackage, Package } from "@/models/Package";
+import { BasketSchema } from "@/schemas/Basket.schema";
 import { BasketAuth } from "./Basket/BasketAuth";
 
 export interface BasketProps {
@@ -65,6 +66,7 @@ export class Basket {
     private _links: BasketLinks;
 
     private constructor(props: BasketProps, token: string) {
+        BasketSchema.parse(props);
         this._id = props.id;
         this._ident = props.ident;
         this._complete = Boolean(props.complete);

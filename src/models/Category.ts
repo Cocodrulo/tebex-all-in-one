@@ -3,6 +3,7 @@ import { executeApi } from "@/lib/ExecuteApi";
 import type { Immutable } from "@/lib/Immutable";
 import { Package, type PackageProps } from "@/models/Package";
 import type { PendingDowngradePackageData, TierStatus } from "@/interfaces/Tier";
+import { CategorySchema } from "@/schemas/Category.schema";
 import { Tier } from "./Tier";
 import { bt64, type BasicAuth } from "@/lib/BasicAuth";
 
@@ -81,6 +82,7 @@ export class Category extends BaseCategory {
 
     constructor(token: string, props: CategoryProps) {
         super({ id: props.id, name: props.name });
+        CategorySchema.parse(props);
         this._slug = props.slug;
         this._parent = props.parent
             ? props.parent instanceof BaseCategory

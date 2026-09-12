@@ -1,5 +1,6 @@
 import { ModuleTypes } from "@/enums/ModuleTypes";
-import { BasicModule } from "@/models/Modules/BasicModule";
+import { BasicModule } from "./BaseModule";
+import { TextboxDataSchema } from "@/schemas/Module.schema";
 
 /**
  * Represents the data of the Textbox module.
@@ -9,6 +10,7 @@ export class TextboxData {
     private _text: string;
 
     constructor(data: { header: string; text: string }) {
+        TextboxDataSchema.parse(data);
         this._header = data.header;
         this._text = data.text;
     }
