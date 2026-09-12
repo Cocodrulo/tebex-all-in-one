@@ -4,10 +4,10 @@
  * @see https://docs.tebex.io/developers/headless-api/guides/basket-links
  */
 export class BasketLinks {
-    private _payment: string;
-    private _checkout: string;
+    private _payment: string | undefined;
+    private _checkout: string | undefined;
 
-    constructor(payment: string, checkout: string) {
+    constructor(payment?: string, checkout?: string) {
         this._payment = payment;
         this._checkout = checkout;
     }
@@ -15,14 +15,14 @@ export class BasketLinks {
     /**
      * The payment URL.
      */
-    get payment(): string {
+    get payment(): string | undefined {
         return this._payment;
     }
 
     /**
      * The checkout URL.
      */
-    get checkout(): string {
+    get checkout(): string | undefined {
         return this._checkout;
     }
 }
