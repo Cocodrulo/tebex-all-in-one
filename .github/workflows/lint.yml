@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
     lint:
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
             - uses: ./.github/actions/setup-repo
@@ -27,9 +27,11 @@ jobs:
                   echo "::endgroup::"
 
     format:
-        runs-on: ubuntu-24.04
+        runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v6
+              with:
+                  ref: ${{ github.head_ref }}
             - uses: ./.github/actions/setup-repo
             - name: Format
               id: check_format
@@ -40,11 +42,11 @@ jobs:
                   echo "::endgroup::"
 
             - name: Fix formatting if check failed
-              if: steps.check_format.outcome == 'failure'
+              if: always() && steps.check_format.outcome == 'failure'
               run: pnpm format:fix
 
-            - name: Fix formatting
-              if: steps.check_format.outcome == 'failure'
+            - name: Commit formatting changes
+              if: always() && steps.check_format.outcome == 'failure'
               uses: stefanzweifel/git-auto-commit-action@v7
               with:
                   commit_message: "style: automated format fix"
@@ -52,7 +54,7 @@ jobs:
                   commit_user_email: "github-actions[bot]@users.noreply.github.com"
 
             - name: Fail step if formatting had to be fixed
-              if: steps.check_format.outcome == 'failure'
+              if: always() && steps.check_format.outcome == 'failure'
               run: |
                   echo "Code formatting issues were detected and auto-fixed."
                   exit 1
