@@ -12,6 +12,9 @@
         "format:check": "oxfmt --check",
         "format:fix": "oxfmt"
     },
+    "dependencies": {
+        "zod": "^4.6.2"
+    },
     "devDependencies": {
         "@types/node": "26.4.1",
         "@typescript/typescript6": "6.0.2",
@@ -20,8 +23,5 @@
         "typescript": "7.0.2",
         "vite": "8.2.2",
         "vite-plugin-dts": "5.1.0"
-    },
-    "dependencies": {
-        "zod": "^4.6.2"
     }
 }
